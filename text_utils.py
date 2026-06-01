@@ -26,52 +26,58 @@ def classify_message(text):
     if not normalized:
         return "empty"
 
-    if "error" in normalized:
-        if "critical" in normalized:
-            return "critical_error"
-        elif "warning" in normalized:
-            return "warning_error"
-        else:
-            return "common_error"
+    keyword_rules = {
+        "error": {
+            "critical": "critical_error",
+            "warning": "warning_error",
+            "default": "common_error",
+        },
+        "payment": {
+            "failed": "payment_failed",
+            "success": "payment_success",
+            "default": "payment_unknown",
+        },
+        "user": {
+            "created": "user_created",
+            "deleted": "user_deleted",
+            "blocked": "user_blocked",
+            "default": "user_event",
+        },
+    }
 
-    if "payment" in normalized:
-        if "failed" in normalized:
-            return "payment_failed"
-        elif "success" in normalized:
-            return "payment_success"
-        else:
-            return "payment_unknown"
-
-    if "user" in normalized:
-        if "created" in normalized:
-            return "user_created"
-        elif "deleted" in normalized:
-            return "user_deleted"
-        elif "blocked" in normalized:
-            return "user_blocked"
-        else:
-            return "user_event"
+    for keyword, rules in keyword_rules.items():
+        if keyword in normalized:
+            return classify_by_rules(normalized, rules)
 
     return "general"
 
 
-def format_user_notification(username, action, status):
-    if status == "success":
-        prefix = "Success"
-    elif status == "warning":
-        prefix = "Warning"
-    elif status == "error":
-        prefix = "Error"
-    else:
-        prefix = "Info"
+def classify_by_rules(text, rules):
+    for keyword, result in rules.items():
+        if keyword != "default" and keyword in text:
+            return result
 
-    if action == "created":
-        return f"{prefix}: user {username} was created"
-    elif action == "updated":
-        return f"{prefix}: user {username} was updated"
-    elif action == "deleted":
-        return f"{prefix}: user {username} was deleted"
-    elif action == "blocked":
-        return f"{prefix}: user {username} was blocked"
-    else:
+    return rules["default"]
+
+
+def format_user_notification(username, action, status):
+    prefixes = {
+        "success": "Success",
+        "warning": "Warning",
+        "error": "Error",
+    }
+
+    actions = {
+        "created": "was created",
+        "updated": "was updated",
+        "deleted": "was deleted",
+        "blocked": "was blocked",
+    }
+
+    prefix = prefixes.get(status, "Info")
+    action_text = actions.get(action)
+
+    if not action_text:
         return f"{prefix}: unknown action for user {username}"
+
+    return f"{prefix}: user {username} {action_text}"
