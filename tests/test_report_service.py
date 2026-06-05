@@ -1,4 +1,4 @@
-from app.report_service import (
+from report_service import (
     build_report,
     build_sales_report,
     build_user_report,
