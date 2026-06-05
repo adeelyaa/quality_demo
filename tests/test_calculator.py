@@ -1,6 +1,6 @@
 import pytest
 
-from app.calculator import (
+from calculator import (
     add,
     subtract,
     multiply,
