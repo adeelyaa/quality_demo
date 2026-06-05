@@ -1,4 +1,4 @@
-from app.text_utils import (
+from text_utils import (
     normalize_text,
     count_words,
     is_palindrome,
